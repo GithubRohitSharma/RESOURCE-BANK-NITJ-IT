@@ -28,11 +28,13 @@ function fetchFacultyAndRender() {
                 </div>
                 <div class="position-relative d-flex justify-content-center" style="margin-top: -23px;">
                     <div class="bg-light d-flex justify-content-center pt-2 px-1">
-                        <span class="btn btn-faculty-wide btn-primary mx-1" onclick="show_contact('${'mail_faculty_' + (i + 1).toString()}','${'phone_faculty_' + (i + 1).toString()}')"></a><i class="fa fa-envelope ">&nbsp; Contact</i></span>
+                        <span class="btn btn-faculty-wide btn-primary mx-1" onclick="show_contact('${'mail_faculty_' + (i + 1).toString()}','${'phone_faculty_' + (i + 1).toString()}')"><i class="fa fa-envelope">&nbsp;CONTACT</i></span>
                     </div>
                 </div>
-                <i class="fa fa-envelope text-center team-contact" id='${'mail_faculty_' + (i + 1).toString()}'>&nbsp;<small>${data[i].name}</small></i>
-                <i class="fa fa-phone text-center team-contact"  id='${'phone_faculty_' + (i + 1).toString()}'>&nbsp;<small>${data[i].properties.facultyContact}</small></i>
+                <div class="contact-info-container">
+                    <div class="text-center team-contact" id='${'mail_faculty_' + (i + 1).toString()}'><i class="fa fa-envelope">&nbsp;</i><small>${data[i].name}</small></div>
+                    <div class="text-center team-contact" id='${'phone_faculty_' + (i + 1).toString()}'><i class="fa fa-phone">&nbsp;</i><small>${data[i].properties.facultyContact}</small></div>
+                </div>
                 <div class="text-center p-4">
                     <h5 class="mb-0">${data[i].properties.facultyName}</h5>
                     <small>${data[i].properties.facultyRole}</small>
@@ -113,3 +115,19 @@ model.onclick = function () {
 
 fetchScheduleAndRender();
 fetchFacultyAndRender();
+
+// Image model functionality
+function expandImg(src) {
+    model.style.display = "block";
+    modelImg.src = src;
+}
+
+// Get the <span> element that closes the model
+var span = document.getElementsByClassName("close")[0];
+// When the user clicks on <span> (x), close the model
+span.onclick = function () {
+    model.style.display = "none";
+}
+model.onclick = function () {
+    model.style.display = "none";
+}

@@ -281,9 +281,8 @@ document.getElementById('schemaManagementForm').addEventListener('submit', funct
         .finally(() => {
             // Close the modal regardless of success or failure
             document.getElementById('schemaManagementModalClose').click();
-        });
+        }) 
 });
-
 
 function fetchShemaAndRender() {
     fetch('/admin/academic_schema')
@@ -364,12 +363,20 @@ function fetchTimetableAndRender() {
 
 function fetchFacultyAndRender() {
     fetch('/admin/fetch-faculty')
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch faculty data');
+            }
+            return response.json();
+        })
         .then(data => {
             console.log('Fetched faculty data:', data);
+            // Update the faculty table
+            renderFacultyTable(data);
+            
+            // Also update the delete table
             facultyListForDelete.innerHTML = "";
             data.forEach(file => {
-                console.log('Processing faculty:', file);
                 const row = document.createElement("tr");
                 row.innerHTML = `
                     <td>${file.properties?.facultyName || file.name}</td>
@@ -378,7 +385,7 @@ function fetchFacultyAndRender() {
                             <button type="button" class="btn btn-primary update-faculty-btn" 
                                 data-faculty-id="${file.id}" 
                                 data-faculty-name="${file.properties?.facultyName || ''}" 
-                                data-faculty-email="${file.name}" 
+                                data-faculty-email="${file.properties?.facultyEmail || file.name}" 
                                 data-faculty-role="${file.properties?.facultyRole || ''}" 
                                 data-faculty-contact="${file.properties?.facultyContact || ''}"
                                 data-faculty-profile="${file.properties?.facultyProfile || ''}">
@@ -392,9 +399,23 @@ function fetchFacultyAndRender() {
                     </td>`;
                 facultyListForDelete.appendChild(row);
             });
+            
+            // Make sure we attach event listeners
             attachUpdateEventListeners();
         })
-        .catch(error => console.error('Error fetching faculty data:', error));
+        .catch(error => {
+            console.error('Error fetching faculty data:', error);
+            document.getElementById('ShowalertManagementModal').click();
+            document.getElementById("alertModalBody").innerHTML = `
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                    <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:">
+                        <use xlink:href="#exclamation-triangle-fill" />
+                    </svg>
+                    <div>
+                        Error loading faculty data: ${error.message}
+                    </div>
+                </div>`;
+        });
 }
 
 function renderschemaLevel1(academic_schema) {
@@ -521,14 +542,204 @@ fetchShemaAndRender();
 fetchTimetableAndRender();
 fetchFacultyAndRender();
 
-function attachUpdateEventListeners() {
-    document.querySelectorAll('.update-faculty-btn').forEach(button => {
-        button.addEventListener('click', handleUpdateFaculty);
+function openUpdateFacultyModal(facultyId, name, email, role, contact, profile) {
+    console.log('Opening update modal with faculty data:', { facultyId, name, email, role, contact, profile });
+    
+    // Make sure the form fields exist before trying to set values
+    const idField = document.getElementById('update-faculty-id');
+    const nameField = document.getElementById('update-faculty-name');
+    const emailField = document.getElementById('update-faculty-email');
+    const roleField = document.getElementById('update-faculty-role');
+    const contactField = document.getElementById('update-faculty-contact');
+    const profileField = document.getElementById('update-faculty-profile');
+    
+    if (!idField) {
+        console.error('update-faculty-id field not found');
+        return;
+    }
+    
+    // Set values in the form
+    idField.value = facultyId;
+    nameField.value = name;
+    emailField.value = email;
+    roleField.value = role;
+    contactField.value = contact;
+    profileField.value = profile || '';
+    
+    // Reset the file input
+    const fileInput = document.getElementById('update-faculty-file');
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    
+    // Show the modal
+    const updateModal = new bootstrap.Modal(document.getElementById('updateFacultyModal'));
+    updateModal.show();
+    
+    console.log('Update modal opened successfully');
+}
+
+function submitFacultyUpdateForm() {
+    const facultyId = document.getElementById('update-faculty-id').value;
+    console.log('Starting update for faculty ID:', facultyId);
+    
+    if (!facultyId) {
+        console.error('Faculty ID is missing!');
+        showAlert('Error: Faculty ID is missing!', 'danger');
+        return;
+    }
+    
+    // Create FormData object manually to ensure all fields are properly included
+    const formData = new FormData();
+    
+    // Log each field as we add it to the form data
+    const name = document.getElementById('update-faculty-name').value;
+    const email = document.getElementById('update-faculty-email').value;
+    const role = document.getElementById('update-faculty-role').value;
+    const contact = document.getElementById('update-faculty-contact').value;
+    const profile = document.getElementById('update-faculty-profile').value || '';
+    
+    console.log('Form values:', { name, email, role, contact, profile });
+    
+    formData.append('facultyName', name);
+    formData.append('facultyEmail', email);
+    formData.append('facultyRole', role);
+    formData.append('facultyContact', contact);
+    formData.append('facultyProfile', profile);
+    
+    // Add file if present
+    const fileInput = document.getElementById('update-faculty-file');
+    if (fileInput && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        console.log('Adding file to form data:', file.name, file.type, file.size);
+        formData.append('file', file);
+    } else {
+        console.log('No file selected for upload');
+    }
+    
+    // Show loading
+    showAlert('Updating faculty information...', 'info');
+    
+    console.log('Sending update request to:', `/admin/update-faculty/${facultyId}`);
+    
+    // Use fetch API with detailed logging
+    fetch(`/admin/update-faculty/${facultyId}`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            return response.text().then(text => {
+                console.error('Error response text:', text);
+                try {
+                    const errorData = JSON.parse(text);
+                    throw new Error(errorData.error || 'Failed to update faculty');
+                } catch (e) {
+                    throw new Error(text || 'Failed to update faculty');
+                }
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Update successful:', data);
+        
+        // Show success
+        showAlert('Faculty updated successfully!', 'success');
+        
+        // Close the modal
+        const updateModal = bootstrap.Modal.getInstance(document.getElementById('updateFacultyModal'));
+        if (updateModal) {
+            updateModal.hide();
+        }
+        
+        // Refresh the faculty list
+        setTimeout(() => {
+            fetchFacultyAndRender();
+        }, 500);
+    })
+    .catch(error => {
+        console.error('Error updating faculty:', error);
+        showAlert(`Error updating faculty: ${error.message || 'Unknown error'}`, 'danger');
     });
 }
 
+// Utility function for showing alerts
+function showAlert(message, type) {
+    document.getElementById('ShowalertManagementModal').click();
+    document.getElementById("alertModalBody").innerHTML = `
+        <div class="alert alert-${type} d-flex align-items-center" role="alert">
+            ${type === 'info' ? 
+                `<div class="spinner-grow spinner-grow-sm me-2 text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>` : 
+                `<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="${type === 'success' ? 'Success' : 'Warning'}:">
+                    <use xlink:href="#${type === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill'}" />
+                </svg>`
+            }
+            <div>${message}</div>
+        </div>`;
+}
+
+function renderFacultyTable(facultyData) {
+    console.log('Rendering faculty data:', facultyData);
+    // Your existing rendering code...
+    const tbody = document.querySelector("#facultyTable tbody");
+    if (!tbody) {
+        console.error('Faculty table body not found!');
+        return;
+    }
+    
+    tbody.innerHTML = '';
+    
+    facultyData.forEach(faculty => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>
+                <img src="${faculty.thumbnailLink || ''}" alt="${faculty.properties.facultyName}" class="rounded-circle" width="50" height="50">
+            </td>
+            <td>${faculty.properties.facultyName}</td>
+            <td>${faculty.properties.facultyEmail}</td>
+            <td>${faculty.properties.facultyRole}</td>
+            <td>
+                <button class="btn btn-sm btn-primary update-faculty-btn" 
+                    data-faculty-id="${faculty.id}"
+                    data-faculty-name="${faculty.properties.facultyName}"
+                    data-faculty-email="${faculty.properties.facultyEmail}"
+                    data-faculty-role="${faculty.properties.facultyRole}"
+                    data-faculty-contact="${faculty.properties.facultyContact}"
+                    data-faculty-profile="${faculty.properties.facultyProfile || ''}">
+                    Update
+                </button>
+                <button class="btn btn-sm btn-danger delete-faculty-btn" data-faculty-id="${faculty.id}">
+                    Delete
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+    
+    // Make sure to attach event listeners after rendering
+    attachUpdateEventListeners();
+}
+
+function attachUpdateEventListeners() {
+    console.log('Attaching update event listeners');
+    document.querySelectorAll('.update-faculty-btn').forEach(button => {
+        console.log('Found update button:', button);
+        // Remove any existing listeners to prevent duplicates
+        button.removeEventListener('click', handleUpdateFaculty);
+        // Add the click listener
+        button.addEventListener('click', handleUpdateFaculty);
+    });
+    console.log('Update event listeners attached to faculty buttons');
+}
+
 function handleUpdateFaculty(event) {
-    const button = event.target;
+    const button = event.target.closest('.update-faculty-btn');
+    if (!button) return;
     
     // Fetch faculty details from data attributes
     const facultyId = button.getAttribute('data-faculty-id');
@@ -538,7 +749,7 @@ function handleUpdateFaculty(event) {
     const facultyContact = button.getAttribute('data-faculty-contact');
     const facultyProfile = button.getAttribute('data-faculty-profile');
 
-    console.log('Faculty Data:', {
+    console.log('Opening update modal with faculty data:', {
         id: facultyId,
         name: facultyName,
         email: facultyEmail,
@@ -547,98 +758,14 @@ function handleUpdateFaculty(event) {
         profile: facultyProfile
     });
 
-    // Populate the modal form
-    document.getElementById('update-faculty-id').value = facultyId;
-    document.getElementById('update-faculty-name').value = facultyName;
-    document.getElementById('update-faculty-email').value = facultyEmail;
-    document.getElementById('update-faculty-role').value = facultyRole;
-    document.getElementById('update-faculty-contact').value = facultyContact;
-    if (document.getElementById('update-faculty-profile')) {
-        document.getElementById('update-faculty-profile').value = facultyProfile || '';
-    }
-
-    // Show the modal
-    const updateModal = new bootstrap.Modal(document.getElementById('updateFacultyModal'));
-    updateModal.show();
+    // Open the modal with the faculty data
+    openUpdateFacultyModal(facultyId, facultyName, facultyEmail, facultyRole, facultyContact, facultyProfile);
 }
 
-// Update the form submission handler
-document.getElementById('updateFacultyForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    const facultyId = document.getElementById('update-faculty-id').value;
-    const formData = new FormData();
-
-    // Append all form data
-    formData.append('facultyName', document.getElementById('update-faculty-name').value);
-    formData.append('facultyEmail', document.getElementById('update-faculty-email').value);
-    formData.append('facultyRole', document.getElementById('update-faculty-role').value);
-    formData.append('facultyContact', document.getElementById('update-faculty-contact').value);
-    formData.append('facultyProfile', document.getElementById('update-faculty-profile').value || '');
-
-    const fileInput = document.getElementById('update-faculty-file');
-    if (fileInput.files.length > 0) {
-        formData.append('file', fileInput.files[0]);
-    }
-
-    try {
-        const response = await fetch(`/admin/update-faculty/${facultyId}`, {
-            method: 'POST',
-            body: formData
-        });
-
-        if (!response.ok) {
-            throw new Error(await response.text());
-        }
-
-        const data = await response.json();
-
-        // Show success message
-        document.getElementById('ShowalertManagementModal').click();
-        document.getElementById("alertModalBody").innerHTML = `
-            <div class="alert alert-success d-flex align-items-center" role="alert">
-                <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Success:">
-                    <use xlink:href="#check-circle-fill" />
-                </svg>
-                <div>
-                    Faculty updated successfully!
-                </div>
-            </div>`;
-
-        // Close the modal
-        const updateModal = bootstrap.Modal.getInstance(document.getElementById('updateFacultyModal'));
-        updateModal.hide();
-
-        // Update the faculty list immediately without page reload
-        await fetchFacultyAndRender();
-
-        // Force reload all faculty data on the page
-        const facultyDataElements = document.querySelectorAll('[data-faculty-id]');
-        facultyDataElements.forEach(element => {
-            if (element.getAttribute('data-faculty-id') === facultyId) {
-                element.setAttribute('data-faculty-name', data.properties.facultyName);
-                element.setAttribute('data-faculty-email', data.properties.facultyEmail);
-                element.setAttribute('data-faculty-role', data.properties.facultyRole);
-                element.setAttribute('data-faculty-contact', data.properties.facultyContact);
-                element.setAttribute('data-faculty-profile', data.properties.facultyProfile || '');
-            }
-        });
-
-        // Reload the page to update all instances
-        window.location.reload();
-
-    } catch (error) {
-        console.error('Error updating faculty:', error);
-        document.getElementById('ShowalertManagementModal').click();
-        document.getElementById("alertModalBody").innerHTML = `
-            <div class="alert alert-warning d-flex align-items-center" role="alert">
-                <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:">
-                    <use xlink:href="#exclamation-triangle-fill" />
-                </svg>
-                <div>
-                    Error updating faculty: ${error.message}
-                </div>
-            </div>`;
+document.addEventListener('submit', function(event) {
+    const form = event.target;
+    if (form.id === 'updateFacultyForm') {
+        event.preventDefault();
+        submitFacultyUpdateForm();
     }
 });
-

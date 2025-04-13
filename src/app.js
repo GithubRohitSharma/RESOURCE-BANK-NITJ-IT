@@ -713,22 +713,36 @@ app.post("/admin/update-faculty/:fileId", authAdmin, upload.single('file'), asyn
         const body = req.body;
         const file = req.file; // This will contain the uploaded file if any
 
+        console.log('Received update faculty request for fileId:', fileId);
+        console.log('Request body:', body);
+        console.log('File uploaded:', file ? file.originalname : 'No file');
+
+        // Validate required fields
+        if (!body.facultyName || !body.facultyEmail || !body.facultyRole || !body.facultyContact) {
+            return res.status(400).json({ 
+                error: "Missing required fields. Please provide name, email, role and contact." 
+            });
+        }
+
         if (file && !file.mimetype.startsWith('image/')) {
             return res.status(400).json({ error: "Only image files are allowed." });
         }
 
+        // Process the update
         const updatedFile = await fileManager.updateFaculty(fileId, body, file);
+        console.log('Faculty updated successfully:', updatedFile);
 
-        res.json({
+        return res.status(200).json({
             message: "Faculty updated successfully.",
             updatedFile: updatedFile
         });
     } catch (error) {
+        console.error('Error in update-faculty route:', error);
         logger.error(error.message);
-        res.status(500).json({ error: "Server error" });
+        res.status(500).json({ error: error.message || "Server error" });
     }
 });
 
-app.listen(PORT,  () => {
+app.listen(PORT, '10.10.195.252', () => {
     console.log("Listening to port " + PORT);
 })

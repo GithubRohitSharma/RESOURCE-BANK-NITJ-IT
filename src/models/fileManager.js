@@ -468,6 +468,10 @@ class FileManager {
     const service = google.drive("v3");
 
     try {
+        console.log('Updating faculty with ID:', fileId);
+        console.log('Request body:', body);
+        console.log('File present:', !!file);
+
         // Prepare updated metadata
         const fileMetadata = {
             properties: {
@@ -479,6 +483,8 @@ class FileManager {
             }
         };
 
+        console.log('File metadata to update:', fileMetadata);
+
         // If a new file is provided, update the file's media
         let media = null;
         if (file && file.mimetype.startsWith('image/')) {
@@ -486,6 +492,20 @@ class FileManager {
                 mimeType: file.mimetype,
                 body: Readable.from(file.buffer)
             };
+            console.log('Including media in update with mimetype:', file.mimetype);
+        }
+
+        // First, get the current file to verify it exists
+        try {
+            const currentFile = await service.files.get({
+                auth: this.jwtClient,
+                fileId: fileId,
+                fields: 'id, name, properties',
+            });
+            console.log('Current file data:', currentFile.data);
+        } catch (error) {
+            console.error('Error retrieving current file:', error);
+            throw new Error(`File not found: ${error.message}`);
         }
 
         // Update the file metadata and/or content
@@ -500,17 +520,26 @@ class FileManager {
             enforceSingleParent: true
         });
 
+        console.log('File update response:', res.data);
+
         // If there's a new image, get its thumbnail
         if (file) {
-            const imageResponse = await service.files.get(
-                { fileId: res.data.id, alt: 'media', auth: this.jwtClient },
-                { responseType: 'arraybuffer' }
-            );
-            const buffer = imageResponse.data;
-            const base64String = Buffer.from(new Uint8Array(buffer)).toString('base64');
-            res.data.thumbnailLink = `data:${file.mimetype};base64,${base64String}`;
+            try {
+                const imageResponse = await service.files.get(
+                    { fileId: res.data.id, alt: 'media', auth: this.jwtClient },
+                    { responseType: 'arraybuffer' }
+                );
+                const buffer = imageResponse.data;
+                const base64String = Buffer.from(new Uint8Array(buffer)).toString('base64');
+                res.data.thumbnailLink = `data:${file.mimetype};base64,${base64String}`;
+                console.log('Added thumbnail to response');
+            } catch (thumbnailError) {
+                console.error('Error retrieving thumbnail:', thumbnailError);
+                // Continue even if thumbnail retrieval fails
+            }
         }
         
+        console.log('Returning updated faculty data:', res.data);
         return res.data;
     } catch (error) {
         console.error('Error in updateFaculty:', error);

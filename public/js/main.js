@@ -97,4 +97,34 @@
 window.onbeforeunload = function() {
     window.location.reload(true);
     $('#spinner').addClass('show');
+};
+
+// Initialize lazy loading when DOM is fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if LazyLoader is already loaded
+    if (typeof window.LazyLoader !== 'undefined') {
+        window.LazyLoader.init();
+    }
+
+    // Convert all existing images that don't have loading attribute to use lazy loading
+    document.querySelectorAll('img:not([loading])').forEach(function(img) {
+        if (!img.hasAttribute('loading')) {
+            img.setAttribute('loading', 'lazy');
+        }
+    });
+
+    // Handle dynamically added content with lazy loading
+    // This can be called after AJAX content is loaded or DOM updates
+    window.applyLazyLoading = function(container) {
+        if (typeof window.LazyLoader !== 'undefined') {
+            window.LazyLoader.apply(container);
+        } else {
+            // Fallback if script not loaded
+            if (container) {
+                container.querySelectorAll('img:not([loading])').forEach(function(img) {
+                    img.setAttribute('loading', 'lazy');
+                });
+            }
+        }
     };
+});

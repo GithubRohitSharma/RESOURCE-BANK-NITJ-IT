@@ -526,35 +526,35 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <input type="hidden" id="update-faculty-id">
+                        <input type="hidden" id="update-faculty-id" name="facultyId">
                         <div class="mb-3">
                             <label for="update-faculty-name" class="form-label">Name</label>
-                            <input type="text" class="form-control" id="update-faculty-name" required>
+                            <input type="text" class="form-control" id="update-faculty-name" name="facultyName" required>
                         </div>
                         <div class="mb-3">
                             <label for="update-faculty-email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="update-faculty-email" required>
+                            <input type="email" class="form-control" id="update-faculty-email" name="facultyEmail" required>
                         </div>
                         <div class="mb-3">
                             <label for="update-faculty-role" class="form-label">Role</label>
-                            <input type="text" class="form-control" id="update-faculty-role" required>
+                            <input type="text" class="form-control" id="update-faculty-role" name="facultyRole" required>
                         </div>
                         <div class="mb-3">
                             <label for="update-faculty-contact" class="form-label">Contact</label>
-                            <input type="text" class="form-control" id="update-faculty-contact" required>
+                            <input type="text" class="form-control" id="update-faculty-contact" name="facultyContact" required>
                         </div>
                         <div class="mb-3">
                             <label for="update-faculty-profile" class="form-label">Profile Link</label>
-                            <input type="text" class="form-control" id="update-faculty-profile">
+                            <input type="text" class="form-control" id="update-faculty-profile" name="facultyProfile">
                         </div>
                         <div class="mb-3">
                             <label for="update-faculty-file" class="form-label">Upload New Profile Image (optional)</label>
-                            <input type="file" class="form-control" id="update-faculty-file" accept="image/*">
+                            <input type="file" class="form-control" id="update-faculty-file" name="file" accept="image/*">
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Update</button>
+                        <button type="button" class="btn btn-primary" onclick="submitFacultyUpdateForm(); return false;">Update</button>
                     </div>
                 </form>
             </div>
