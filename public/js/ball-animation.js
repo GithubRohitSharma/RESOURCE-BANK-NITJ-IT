@@ -30,14 +30,20 @@ function createBallAnimation() {
     
     // Create ball
     const ball = document.createElement('div');
-    ball.style.width = '40px';
-    ball.style.height = '40px';
+    ball.style.width = '50px';
+    ball.style.height = '50px';
     ball.style.borderRadius = '50%';
     ball.style.backgroundColor = '#06BBCC';
     ball.style.position = 'absolute';
     ball.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
     ball.style.cursor = 'pointer';
     ball.style.transition = 'transform 0.2s ease';
+    
+    // Make ball larger on mobile for better touch targets
+    if (window.innerWidth <= 768) {
+        ball.style.width = '60px';
+        ball.style.height = '60px';
+    }
     
     // Create instruction
     const instruction = document.createElement('div');
@@ -47,6 +53,14 @@ function createBallAnimation() {
     instruction.style.color = '#333';
     instruction.style.marginTop = '400px';
     instruction.style.opacity = '0.8';
+    
+    // Adjust instruction for mobile
+    if (window.innerWidth <= 768) {
+        instruction.style.fontSize = '16px';
+        instruction.style.marginTop = '300px';
+        instruction.style.padding = '0 20px';
+        instruction.style.textAlign = 'center';
+    }
     
     // Add loading text
     const loadingText = document.createElement('div');
