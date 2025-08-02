@@ -124,7 +124,7 @@
   color: var(--primary) !important;
 }
 
-/* Theme Toggle Switch Styles */
+/* Theme Toggle Switch Styles - Simple Clean Design */
 .theme-toggle-wrapper {
   position: fixed;
   bottom: 30px;
@@ -136,142 +136,89 @@
   position: relative;
   width: 60px;
   height: 30px;
-  background-color: var(--toggle-bg);
+  background-color: #e0e0e0;
   border-radius: 30px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  padding: 0 5px;
+  padding: 0 3px;
   overflow: hidden;
-  box-shadow: 0 4px 6px var(--toggle-shadow);
-  transition: background-color 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
+/* Hide icons - we want a clean toggle without icons */
 .toggle-icons {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  position: absolute;
-  z-index: 1;
+  display: none;
 }
 
-.toggle-icons i {
-  font-size: 14px;
-  transition: color 0.3s ease;
-}
-
-.fa-sun {
-  color: #ffc107;
-  margin-left: 4px;
-}
-
-.fa-moon {
-  color: #6c757d;
-  margin-right: 4px;
+.fa-sun, .fa-moon {
+  display: none;
 }
 
 .toggle-circle {
   position: absolute;
-  left: 4px;
-  width: 22px;
-  height: 22px;
-  background-color: var(--toggle-circle);
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  background-color: #ffffff;
   border-radius: 50%;
-  transition: transform 0.5s cubic-bezier(0.76, 0, 0.24, 1), 
-              background-color 0.3s ease;
+  transition: transform 0.3s ease;
   z-index: 2;
-  box-shadow: 0 2px 5px var(--toggle-shadow);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Light mode toggle state (default) */
+.theme-toggle.light-mode {
+  background-color: #e0e0e0;
+}
+
+.theme-toggle.light-mode .toggle-circle {
+  transform: translateX(0);
+  background-color: #ffffff;
 }
 
 /* Dark mode toggle state */
+.theme-toggle.dark-mode {
+  background-color: #333333;
+}
+
 .theme-toggle.dark-mode .toggle-circle {
   transform: translateX(30px);
-  background-color: #1e1e1e;
+  background-color: #ffffff;
 }
 
-.theme-toggle.dark-mode .fa-moon {
-  color: #a6c0fe;
-}
-
-.theme-toggle.dark-mode .fa-sun {
-  color: #666;
-}
-
-/* Animation for toggle when clicked */
+/* Simple animation for toggle when clicked */
 .theme-toggle.animate .toggle-circle {
-  animation: bounce 0.5s cubic-bezier(0.76, 0, 0.24, 1);
+  animation: simpleBounce 0.3s ease;
 }
 
-@keyframes bounce {
+@keyframes simpleBounce {
   0%, 100% { transform: scale(1) translateX(var(--x, 0)); }
-  50% { transform: scale(1.1) translateX(var(--x, 0)); }
+  50% { transform: scale(1.05) translateX(var(--x, 0)); }
 }
 
 .theme-toggle.dark-mode.animate .toggle-circle {
   --x: 30px;
 }
 
-/* Bubble animations to match existing site design */
-.bubble-container {
-  position: absolute;
-  top: -50px;
-  left: -30px;
-  width: 120px;
-  height: 120px;
-  pointer-events: none;
-  z-index: -1;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+.theme-toggle.light-mode.animate .toggle-circle {
+  --x: 0;
 }
 
-.theme-toggle:hover + .bubble-container,
-.theme-toggle.animate + .bubble-container,
-.bubble-container.active {
-  opacity: 1;
+/* Remove bubbles - clean simple design */
+.bubble-container {
+  display: none;
 }
 
 .bubble {
-  position: absolute;
-  bottom: 0;
-  background: linear-gradient(to right, var(--primary), var(--secondary));
-  border-radius: 50%;
-  opacity: 0.5;
-  animation: float-bubble 5s infinite ease-in-out;
-  width: 10px;
-  height: 10px;
-}
-
-.bubble:nth-child(2n) {
-  width: 15px;
-  height: 15px;
-  animation-delay: 0.2s;
-}
-
-.bubble:nth-child(3n) {
-  width: 8px;
-  height: 8px;
-  animation-delay: 0.8s;
-}
-
-.bubble:nth-child(4n) {
-  width: 12px;
-  height: 12px;
-  animation-delay: 1.2s;
-}
-
-@keyframes float-bubble {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 0.5;
-  }
-  50% {
-    transform: translateY(-40px) scale(1.2);
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateY(-80px) scale(0.8);
-    opacity: 0;
-  }
+  display: none;
 }
 
 /* Theme transition effect for page loads */
@@ -299,8 +246,46 @@
 
 /* Dark mode styles for common elements */
 body {
-  background-color: var(--body-bg);
-  color: var(--text-color);
+  background-color: var(--body-bg) !important;
+  color: var(--text-color) !important;
+}
+
+/* Force light mode background when no theme is set */
+body:not([data-theme]) {
+  background-color: #ffffff !important;
+  color: #212529 !important;
+}
+
+/* Ensure light mode is properly applied */
+[data-theme="light"] body {
+  background-color: #ffffff !important;
+  color: #212529 !important;
+}
+
+/* Force dark mode styles with high specificity */
+html[data-theme="dark"] body {
+  background-color: #121212 !important;
+  color: #e0e0e0 !important;
+}
+
+html[data-theme="dark"] .navbar {
+  background-color: #1e1e1e !important;
+}
+
+html[data-theme="dark"] .navbar-light {
+  background-color: #1e1e1e !important;
+}
+
+html[data-theme="dark"] .navbar-light .navbar-nav .nav-link {
+  color: #e0e0e0 !important;
+}
+
+html[data-theme="dark"] .navbar-nav .nav-item .nav-link {
+  color: #e0e0e0 !important;
+}
+
+html[data-theme="dark"] .navbar-nav .nav-item .dropdown-toggle {
+  color: #e0e0e0 !important;
 }
 
 /* Fix for faculty contact information in dark mode */
@@ -367,7 +352,28 @@ body {
 }
 
 .navbar-light .navbar-nav .nav-link {
-  color: var(--text-color);
+  color: var(--text-color) !important;
+}
+
+/* Fix navigation menu items color */
+.navbar-nav .nav-item .nav-link {
+  color: var(--text-color) !important;
+}
+
+.navbar-nav .nav-item .nav-link:hover,
+.navbar-nav .nav-item .nav-link:focus,
+.navbar-nav .nav-item .nav-link.active {
+  color: var(--text-color) !important;
+}
+
+/* Fix dropdown toggle color */
+.navbar-nav .nav-item .dropdown-toggle {
+  color: var(--text-color) !important;
+}
+
+.navbar-nav .nav-item .dropdown-toggle:hover,
+.navbar-nav .nav-item .dropdown-toggle:focus {
+  color: var(--text-color) !important;
 }
 
 /* Card styling */

@@ -67,10 +67,13 @@ function initializeTheme() {
     // Check if theme is saved in localStorage
     const savedTheme = localStorage.getItem('theme');
     
+    console.log('Saved theme from localStorage:', savedTheme);
+    
     if (savedTheme) {
         // Use saved theme
         document.documentElement.setAttribute('data-theme', savedTheme);
         document.body.classList.add(`theme-${savedTheme}`);
+        console.log('Applied saved theme:', savedTheme);
     } else {
         // Check system preference
         const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -81,6 +84,7 @@ function initializeTheme() {
         
         // Save the system preference
         localStorage.setItem('theme', theme);
+        console.log('Applied system theme:', theme);
     }
     
     // Add event listener for system preference changes
@@ -94,6 +98,10 @@ function initializeTheme() {
     
     // Update all toggle buttons to reflect current theme
     updateToggleState();
+    
+    // Debug: Check current state
+    console.log('Current data-theme:', document.documentElement.getAttribute('data-theme'));
+    console.log('Current body background:', getComputedStyle(document.body).backgroundColor);
 }
 
 /**
@@ -155,6 +163,18 @@ function setTheme(theme) {
     }));
     
     console.log(`Theme changed to ${theme} mode`);
+    console.log('data-theme attribute:', document.documentElement.getAttribute('data-theme'));
+    console.log('CSS variables:', getComputedStyle(document.documentElement).getPropertyValue('--text-color'));
+    console.log('Body background after theme change:', getComputedStyle(document.body).backgroundColor);
+    
+    // Force a repaint to ensure CSS changes are applied
+    document.body.offsetHeight;
+    
+    // Additional debugging
+    console.log('HTML data-theme:', document.documentElement.getAttribute('data-theme'));
+    console.log('Body classes:', document.body.className);
+    console.log('Computed body background:', getComputedStyle(document.body).backgroundColor);
+    console.log('Computed body color:', getComputedStyle(document.body).color);
 }
 
 /**
@@ -164,8 +184,20 @@ function updateToggleState() {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const toggles = document.querySelectorAll('.theme-toggle');
     
+    console.log('Updating toggle state for theme:', currentTheme);
+    
     toggles.forEach(toggle => {
-        toggle.classList.toggle('dark-mode', currentTheme === 'dark');
+        // Remove both classes first
+        toggle.classList.remove('dark-mode', 'light-mode');
+        
+        // Add the appropriate class
+        if (currentTheme === 'dark') {
+            toggle.classList.add('dark-mode');
+            console.log('Added dark-mode class to toggle');
+        } else {
+            toggle.classList.add('light-mode');
+            console.log('Added light-mode class to toggle');
+        }
     });
 }
 

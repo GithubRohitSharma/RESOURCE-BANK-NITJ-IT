@@ -392,6 +392,46 @@ class FileManager {
       q: `'${this.FACULTYID}' in parents`,
       fields: 'files(id, name, properties)'
     });
+
+    // Sort faculty by role priority and then alphabetically within each role
+    const roleOrder = [
+      'associate professor & hod it',
+      'assistant professor (grade-i)',
+      'assistant professor (grade-ii)'
+    ];
+
+    response.data.files.sort((a, b) => {
+      const roleA = a.properties?.facultyRole || '';
+      const roleB = b.properties?.facultyRole || '';
+
+      const indexA = roleOrder.indexOf(roleA.toLowerCase());
+      const indexB = roleOrder.indexOf(roleB.toLowerCase());
+
+      // If both roles are found in the order list, compare their indices
+      if (indexA !== -1 && indexB !== -1) {
+        // If they have the same role, sort alphabetically by faculty name
+        if (indexA === indexB) {
+          const nameA = a.properties?.facultyName || a.name || '';
+          const nameB = b.properties?.facultyName || b.name || '';
+          return nameA.localeCompare(nameB);
+        }
+        return indexA - indexB;
+      }
+
+      // If only one role is found in the order list, it should come first
+      if (indexA !== -1) {
+        return -1;
+      }
+      if (indexB !== -1) {
+        return 1;
+      }
+
+      // If neither role is found in the order list, sort by name
+      const nameA = a.properties?.facultyName || a.name || '';
+      const nameB = b.properties?.facultyName || b.name || '';
+      return nameA.localeCompare(nameB);
+    });
+
     return response.data.files;
   }
 
@@ -426,12 +466,9 @@ class FileManager {
 
     if (type === 'faculty') {
       const roleOrder = [
-        'associate professor & head it',
-        'professor',
-        'associate professor',
-        'assistant professor (grade-I)',
-        'assistant professor (grade-II)',
-        'assistant professor (grade-III)'
+        'associate professor & hod it',
+        'assistant professor (grade-i)',
+        'assistant professor (grade-ii)'
       ];
 
       response.data.files.sort((a, b) => {
@@ -443,6 +480,12 @@ class FileManager {
 
         // If both roles are found in the order list, compare their indices
         if (indexA !== -1 && indexB !== -1) {
+          // If they have the same role, sort alphabetically by faculty name
+          if (indexA === indexB) {
+            const nameA = a.properties?.facultyName || a.name || '';
+            const nameB = b.properties?.facultyName || b.name || '';
+            return nameA.localeCompare(nameB);
+          }
           return indexA - indexB;
         }
 
@@ -455,7 +498,9 @@ class FileManager {
         }
 
         // If neither role is found in the order list, sort by name
-        return a.name.localeCompare(b.name);
+        const nameA = a.properties?.facultyName || a.name || '';
+        const nameB = b.properties?.facultyName || b.name || '';
+        return nameA.localeCompare(nameB);
       });
     } else {
       response.data.files.sort((a, b) => a.name.localeCompare(b.name));

@@ -352,6 +352,31 @@ app.get("/team", auth, (req, res) => {
         logger.error(error.message);
     }
 })
+app.get("/signup", (req, res) => {
+    try {
+        console.log("Signup page requested");
+        res.render("signup");
+    } catch (error) {
+        logger.error(error.message);
+        console.error("Error rendering signup:", error);
+    }
+})
+
+app.get("/terms", (req, res) => {
+    try {
+        res.render("terms");
+    } catch (error) {
+        logger.error(error.message);
+    }
+})
+
+app.get("/privacy", (req, res) => {
+    try {
+        res.render("privacy");
+    } catch (error) {
+        logger.error(error.message);
+    }
+})
 app.get("*", (req, res) => {
     try {
         res.render("404.hbs")
@@ -436,6 +461,50 @@ app.post("/changePassword", async (req, res) => {
         } 
     } catch (error) {
         logger.error(error.message);
+    }
+})
+
+app.post("/signup", async (req, res) => {
+    try {
+        console.log("Signup POST request received");
+        console.log("Request body:", req.body);
+        
+        let email = (req.body.mail).toLowerCase();
+        let password = req.body.newPass;
+        
+        if (!await register.isMailValid(email)) {
+            return res.status(201).render("signup", { problem: "InvalidMail", username: "" })
+        }
+        else if (!await register.isPassStrong(password)) {
+            return res.status(201).render("signup", { problem: "WeakPassword", username: email })
+        }
+        else {
+            // Check if user already exists
+            const existingUser = await Users.findOne({ username: email });
+            if (existingUser) {
+                return res.status(201).render("signup", { problem: "UserExists", username: email })
+            }
+            
+            // Hash password and send OTP
+            password = await bcrypt.hash(password, 10);
+            var otpGen = (Math.floor(100000 + (Math.random() * (1000000 - 100000)))).toString()
+            var otpGenSafe = await bcrypt.hash(otpGen, 10);
+            var userEncrypted = await bcrypt.hash(email, 10);
+            
+            await register.sendMail(email, SUPPORT_MAIL, "OTP for IT portal", "Your OTP to register at IT Portal is: " + otpGen + "\n\nHave a great time studying!!")
+                .then(data => {
+                    console.log('Mail sent successfully')
+                    return res.status(201).render("verifyOTP", { username: email, usernameEnc: userEncrypted, password: password, otp: otpGenSafe, registered: "No" })
+                })
+                .catch(err => {
+                    console.error('Failed to send email:\n' + err)
+                    return res.status(201).render("signup", { problem: "EmailError", username: email })
+                })
+        }
+    }
+    catch (error) {
+        logger.error(error.message);
+        return res.status(201).render("signup", { problem: "ServerError", username: "" })
     }
 })
 

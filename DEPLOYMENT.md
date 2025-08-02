@@ -1,8 +1,8 @@
-# 🚀 Vercel Deployment Guide
+# 🚀 Deployment Guide
 
 ## Prerequisites
 
-1. **Vercel Account**: Sign up at [vercel.com](https://vercel.com)
+1. **Hosting Platform**: Choose your preferred hosting platform (Render, Railway, Heroku, etc.)
 2. **GitHub Account**: Your code should be on GitHub
 3. **MongoDB Atlas**: Set up a cloud MongoDB database
 4. **Environment Variables**: Prepare your environment variables
@@ -28,75 +28,25 @@ FORGOTPASS=your_email_app_password
 SUPPORT_MAIL=resourcebank.it@nitj.ac.in
 ```
 
-## Step 3: Deploy to Vercel
+## Step 3: Choose Your Deployment Platform
 
-### Method 1: Using Vercel CLI (Recommended)
+### Option 1: Render (Recommended)
+- Free tier available
+- Easy deployment from GitHub
+- Automatic deployments
+- See `RENDER-DEPLOYMENT.md` for detailed instructions
 
-1. **Install Vercel CLI**
-   ```bash
-   npm i -g vercel
-   ```
+### Option 2: Railway
+- Simple deployment process
+- Good for Node.js applications
+- Automatic scaling
 
-2. **Login to Vercel**
-   ```bash
-   vercel login
-   ```
+### Option 3: Heroku
+- Industry standard
+- Good documentation
+- Multiple pricing tiers
 
-3. **Deploy from your project directory**
-   ```bash
-   cd resourceBankNITJ
-   vercel
-   ```
-
-4. **Follow the prompts**:
-   - Link to existing project? → `N` (for first deployment)
-   - Project name → `resource-bank-nitj`
-   - Directory → `./` (current directory)
-   - Override settings? → `N`
-
-### Method 2: Using Vercel Dashboard
-
-1. **Push your code to GitHub**
-   ```bash
-   git add .
-   git commit -m "Prepare for Vercel deployment"
-   git push origin main
-   ```
-
-2. **Connect to Vercel**:
-   - Go to [vercel.com/dashboard](https://vercel.com/dashboard)
-   - Click "New Project"
-   - Import your GitHub repository
-   - Select the repository
-
-3. **Configure the project**:
-   - Framework Preset: `Node.js`
-   - Root Directory: `./`
-   - Build Command: `npm run build`
-   - Output Directory: `./`
-   - Install Command: `npm install`
-
-## Step 4: Configure Environment Variables
-
-1. **In Vercel Dashboard**:
-   - Go to your project settings
-   - Navigate to "Environment Variables"
-   - Add each variable from your `.env` file:
-
-   ```
-   SECRET=your_super_secret_jwt_key_here
-   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/resourcebank
-   GOOGLE_DRIVE_CREDENTIALS={"type":"service_account",...}
-   FORGOTPASS=your_email_app_password
-   SUPPORT_MAIL=resourcebank.it@nitj.ac.in
-   ```
-
-2. **Deploy again** after adding environment variables:
-   ```bash
-   vercel --prod
-   ```
-
-## Step 5: Google Drive API Setup
+## Step 4: Google Drive API Setup
 
 1. **Create Google Cloud Project**:
    - Go to [Google Cloud Console](https://console.cloud.google.com/)
@@ -113,11 +63,11 @@ SUPPORT_MAIL=resourcebank.it@nitj.ac.in
    - Share it with your service account email
    - Give it "Editor" permissions
 
-4. **Add credentials to Vercel**:
+4. **Add credentials to your hosting platform**:
    - Copy the entire JSON content
    - Add it as `GOOGLE_DRIVE_CREDENTIALS` environment variable
 
-## Step 6: Email Configuration
+## Step 5: Email Configuration
 
 1. **Gmail App Password**:
    - Enable 2-factor authentication on your Gmail
@@ -126,9 +76,9 @@ SUPPORT_MAIL=resourcebank.it@nitj.ac.in
 
 2. **Test email functionality** after deployment
 
-## Step 7: Verify Deployment
+## Step 6: Verify Deployment
 
-1. **Check your deployment URL** (e.g., `https://resource-bank-nitj.vercel.app`)
+1. **Check your deployment URL** (provided by your hosting platform)
 
 2. **Test all features**:
    - User registration/login
@@ -142,7 +92,7 @@ SUPPORT_MAIL=resourcebank.it@nitj.ac.in
 
 1. **Database Connection Error**:
    - Check MongoDB URI format
-   - Ensure IP whitelist includes Vercel's IPs
+   - Ensure IP whitelist includes your hosting platform's IPs
    - Verify database name and credentials
 
 2. **File Upload Issues**:
@@ -156,34 +106,20 @@ SUPPORT_MAIL=resourcebank.it@nitj.ac.in
    - Test email configuration
 
 4. **Build Errors**:
-   - Check `vercel.json` configuration
    - Verify all dependencies in `package.json`
    - Check for syntax errors
-
-### Debug Commands:
-
-```bash
-# Check Vercel logs
-vercel logs
-
-# Redeploy with fresh build
-vercel --prod --force
-
-# Check environment variables
-vercel env ls
-```
+   - Review hosting platform logs
 
 ## Post-Deployment
 
 1. **Set up custom domain** (optional):
-   - Go to project settings in Vercel
-   - Add your custom domain
    - Configure DNS settings
+   - Add SSL certificate
 
 2. **Monitor performance**:
-   - Use Vercel Analytics
    - Monitor error logs
    - Check database performance
+   - Set up monitoring tools
 
 3. **Set up automatic deployments**:
    - Connect to GitHub
@@ -199,4 +135,4 @@ vercel env ls
 
 ---
 
-**Your app should now be live at**: `https://your-project-name.vercel.app` 
+**Your app should now be live at your chosen hosting platform's URL** 
